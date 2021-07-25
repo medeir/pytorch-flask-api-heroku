@@ -42,10 +42,10 @@
           }
 
           let ext = $('#inputfile').val().split('.').pop().toLowerCase();
-          // if($.inArray(ext, ['jpg','jpeg']) == -1) {
-          //   $("#inputfile").val(null);
-          //   alert('only jpeg/jpg files are allowed!');
-          // }
+           if($.inArray(ext, ['jpg','jpeg','png']) == -1) {
+             $("#inputfile").val(null);
+             alert('only jpeg/jpg files are allowed!');
+           }
       });
     </script>
     <!-- Github Ribbon Start-->

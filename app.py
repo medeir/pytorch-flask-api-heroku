@@ -9,7 +9,7 @@ from PIL import Image
 import base64
 import os
 import io
-
+import numpy as np
 if not os.path.exists('./static/tmp/'):
     os.makedirs('./static/tmp/')
 
@@ -26,7 +26,10 @@ def upload_file():
             return
         img_bytes = file.read()
         input_image = Image.open(io.BytesIO(img_bytes))
-        input_image.save('./static/tmp/in.jpg')
+        input_image_array = np.array(input_image)
+        # print('input_image',input_image)
+        input_image_1 = Image.fromarray(input_image_array)
+        input_image_1.save('./static/tmp/in.png')
         class_id, class_name = get_prediction(image_bytes=img_bytes)
         class_name = format_class_name(class_name)
         return render_template('result.html', class_id=class_id,
