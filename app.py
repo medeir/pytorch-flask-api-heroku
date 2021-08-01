@@ -10,11 +10,18 @@ import base64
 import os
 import io
 import numpy as np
+import nibabel as nib
+from nibabel import FileHolder, Nifti1Image
+from gzip import GzipFile
+import matplotlib.pyplot as plt
 if not os.path.exists('./static/tmp/'):
     os.makedirs('./static/tmp/')
 
 app = Flask(__name__)
-
+def image_normalize(img):
+    img = (img - np.min(img))/(np.max(img) - np.min(img))
+    img = np.uint8(img*255)
+    return img
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
@@ -22,15 +29,22 @@ def upload_file():
         if 'file' not in request.files:
             return redirect(request.url)
         file = request.files.get('file')
-        if not file:
-            return
-        img_bytes = file.read()
-        input_image = Image.open(io.BytesIO(img_bytes))
-        input_image_array = np.array(input_image)
-        # print('input_image',input_image)
-        input_image_1 = Image.fromarray(input_image_array)
+        print('file',file.filename)
+        fname = file.filename
+        rr = file.read()
+        bb = io.BytesIO(rr)
+        fh = FileHolder(fileobj=GzipFile(fileobj=bb))
+        img = Nifti1Image.from_file_map({'header': fh, 'image': fh})
+        print('img',img)
+        img_data = image_normalize(img.get_data())
+        print('img_data',img_data.shape)
+        print('img_data',img_data)
+        idx = 100
+        #plt.imshow(img_data[:,idx,:])
+        #plt.show()
+        input_image_1 = Image.fromarray(img_data[:,idx,:])
         input_image_1.save('./static/tmp/in.png')
-        class_id, class_name = get_prediction(image_bytes=img_bytes)
+        class_id, class_name = get_prediction(image_bytes=rr)
         class_name = format_class_name(class_name)
         return render_template('result.html', class_id=class_id,
                                class_name=class_name)
